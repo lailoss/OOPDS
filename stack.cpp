@@ -5,12 +5,12 @@
 using namespace std;
 
 class Stack {
-    private:
-        static const int MAX = 100;   // Maximum stack size
-        string items[MAX];
-        int top;
-    public:
-        Stack() { top = -1; }
+private:
+    static const int MAX = 100;   // Maximum stack size
+    string items[MAX];
+    int top;
+public:
+    Stack() { top = -1; }
 
     // Add item to stack (Push)
     void pushItem(string item) {
@@ -39,35 +39,19 @@ class Stack {
 
     // Check if stack empty
     bool isEmpty() { return (top < 0); }
+
+    // Display all items in stack (top to bottom)
+    void display() {
+        if (isEmpty()) {
+            cout << "Inventory is empty.\n";
+            return;
+        }
+        cout << "Current inventory (top to bottom):\n";
+        for (int i = top; i >= 0; i--) {
+            cout << "- " << items[i] << endl;
+        }
+    }
 };
-
-void addIncoming(stack<string>& inventory) {
-    string item;
-    cout << "Enter item name: ";
-    getline(cin, item);
-    inventory.push(item);
-    cout << "Item \"" << item << "\" added to inventory.\n";
-}
-
-void processIncoming(stack<string>& inventory, queue<string>& shipping) {
-    if (inventory.empty()) {
-        cout << "No items in inventory to process.\n";
-    } else {
-        string item = inventory.top();
-        inventory.pop();
-        shipping.push(item);
-        cout << "Processed \"" << item << "\" and added to shipping queue.\n";
-    }
-}
-
-void viewLastIncoming(stack<string>& inventory) {
-    if (inventory.empty()) {
-        cout << "No incoming items.\n";
-    } else {
-        cout << "Last incoming item: " << inventory.top() << endl;
-    }
-}
-
 
 int main() {
     Stack inventory;
@@ -79,10 +63,22 @@ int main() {
         cout << "1. Add Incoming Item\n";
         cout << "2. Process Incoming Item\n";
         cout << "3. View Last Incoming Item\n";
-        cout << "4. Exit\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
-        cin.ignore();
+        cout << "4. Display Inventory\n";
+        cout << "5. Exit\n";
+
+        // Input validation loop
+        while (true) {
+            cout << "Enter your choice: ";
+            cin >> choice;
+            if (cin.fail()) { // non-integer input
+                cin.clear(); // clear error flag
+                cin.ignore(1000, '\n'); // discard invalid input
+                cout << "Invalid choice! Please enter a number.\n";
+            } else {
+                cin.ignore(1000, '\n'); // remove leftover newline
+                break; // valid integer
+            }
+        }
 
         switch(choice) {
             case 1: {
@@ -104,12 +100,15 @@ int main() {
                 cout << "Last incoming item: " << inventory.peekLastItem() << endl;
                 break;
             case 4:
+                inventory.display();
+                break;
+            case 5:
                 cout << "Exiting...\n";
                 break;
             default:
                 cout << "Invalid choice!\n";
         }
-    } while(choice != 4);
+    } while(choice != 5);
 
     return 0;
 }
