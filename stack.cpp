@@ -41,7 +41,7 @@ public:
     bool isEmpty() { return (top < 0); }
 
     // Display all items in stack (top to bottom)
-    void display() {
+    void displayStack() {
         if (isEmpty()) {
             cout << "Inventory is empty.\n";
             return;
@@ -100,7 +100,7 @@ int main() {
                 cout << "Last incoming item: " << inventory.peekLastItem() << endl;
                 break;
             case 4:
-                inventory.display();
+                inventory.displayStack();
                 break;
             case 5:
                 cout << "Exiting...\n";
