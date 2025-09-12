@@ -59,7 +59,8 @@ public:
 
     void pushItem(const string &item)
     {
-        if (top >= MAX - 1)
+        // Prevent overflow by checking capacity first
+        if (isFull())
         {
             cout << "Error: Inventory full!\n";
             return;
@@ -116,7 +117,8 @@ public:
 
     void enqueue(const string &item)
     {
-        if (count >= MAX)
+        // Prevent overflow by ensuring capacity
+        if (isFull())
         {
             cout << "Error: Shipping queue full!\n";
             return;
@@ -177,11 +179,24 @@ int main()
 
     while (true)
     {
-        int choice = readMenuChoice(1, 8);
+        int choice = readMenuChoice(1, 6);
 
         switch (choice)
         {
         case 1:
+        { // Add Incoming Item
+            cout << "Enter item name: ";
+            string name;
+            getline(cin, name);
+            name = trim(name);
+            if (!name.empty())
+                inventory.pushItem(name);
+            else
+                cout << "Item name cannot be empty.\n";
+            break;
+        }
+
+        case 2:
         { // Process Incoming (Stack -> Queue)
             if (!inventory.isEmpty())
             {
@@ -196,39 +211,28 @@ int main()
             break;
         }
 
-        case 2:
+        case 3:
         { // Ship Item
             shipping.dequeue();
             break;
         }
 
-        case 3:
+        case 4:
         { // View Last Incoming
             cout << "Last incoming item: " << inventory.peekLastItem() << "\n";
             break;
         }
 
-        case 4:
+        case 5:
         { // View Next Shipment
             cout << "Next item to ship: " << shipping.peekNextItem() << "\n";
             break;
         }
 
-        case 5:
-        { // Display all incoming items
-            inventory.displayStack();
-            break;
-        }
-
         case 6:
-        { // Display all shipping items
-            shipping.displayQueue();
-            break;
-        }
-
-        case 7:
             cout << "Exiting...\n";
             return 0;
         }
     }
 }
+
