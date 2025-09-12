@@ -26,11 +26,12 @@ static int readMenuChoice(int lo, int hi)
                 "3. Ship Item\n"
                 "4. View Last Incoming Item\n"
                 "5. View Next Shipment\n"
-                "6. Exit\n"
+                "6. Display All Incoming Items\n"
+                "7. Display All Shipping Items\n"
+                "8. Exit\n"
                 "Enter your choice: ";
         if (cin >> choice)
         {
-            // drop leftover chars (e.g., spaces) up to newline
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             if (choice >= lo && choice <= hi)
                 return choice;
@@ -38,7 +39,6 @@ static int readMenuChoice(int lo, int hi)
         }
         else
         {
-            // user typed letters or junk -> clear and flush entire bad line
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Invalid input. Please enter a number.\n";
@@ -100,6 +100,7 @@ public:
     }
 
     bool isEmpty() { return (top < 0); }
+    bool isFull() const { return top >= MAX - 1; } // check for stack overflow
 };
 
 /* --------- Queue (shipping, FIFO) --------- */
@@ -109,6 +110,7 @@ private:
     static const int MAX = 100;
     string items[MAX];
     int front, rear, count; // circular buffer
+
 public:
     Queue() : front(0), rear(-1), count(0) {}
 
@@ -162,6 +164,7 @@ public:
     }
 
     bool isEmpty() { return count == 0; }
+    bool isFull() const { return count >= MAX; } // check for queue overflow
 };
 
 /* --------- main --------- */
