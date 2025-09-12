@@ -1,18 +1,66 @@
 #include <iostream>
 #include <string>
+#include <limits>
+#include <cctype>
 using namespace std;
 
-class Stack {
+/* --------- helpers --------- */
+static string trim(const string &s)
+{
+    size_t b = 0, e = s.size();
+    while (b < e && isspace(static_cast<unsigned char>(s[b])))
+        ++b;
+    while (e > b && isspace(static_cast<unsigned char>(s[e - 1])))
+        --e;
+    return s.substr(b, e - b);
+}
+
+static int readMenuChoice(int lo, int hi)
+{
+    int choice;
+    while (true)
+    {
+        cout << "\nMenu:\n"
+                "1. Add Incoming Item\n"
+                "2. Process Incoming Item\n"
+                "3. Ship Item\n"
+                "4. View Last Incoming Item\n"
+                "5. View Next Shipment\n"
+                "6. Exit\n"
+                "Enter your choice: ";
+        if (cin >> choice)
+        {
+            // drop leftover chars (e.g., spaces) up to newline
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            if (choice >= lo && choice <= hi)
+                return choice;
+            cout << "Please enter a number " << lo << '-' << hi << ".\n";
+        }
+        else
+        {
+            // user typed letters or junk -> clear and flush entire bad line
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number.\n";
+        }
+    }
+}
+
+/* --------- Stack (incoming, LIFO) --------- */
+class Stack
+{
 private:
-    static const int MAX = 100;  
+    static const int MAX = 100;
     string items[MAX];
     int top;
+
 public:
-    Stack() { top = -1; }
+    Stack() : top(-1) {}
 
-
-    void pushItem(string item) {
-        if (top >= MAX - 1) {
+    void pushItem(const string &item)
+    {
+        if (top >= MAX - 1)
+        {
             cout << "Error: Inventory full!\n";
             return;
         }
@@ -20,125 +68,164 @@ public:
         cout << "Item \"" << item << "\" added to inventory.\n";
     }
 
- 
-    string popItem() {
-        if (isEmpty()) {
+    string popItem()
+    {
+        if (isEmpty())
+        {
             cout << "Error: No items in inventory to process.\n";
             return "";
         }
         return items[top--];
     }
 
-    
-    string peekLastItem() {
-        if (isEmpty()) return "No incoming items.";
+    string peekLastItem()
+    {
+        if (isEmpty())
+            return "No incoming items.";
         return items[top];
     }
 
-    
+    void displayStack()
+    {
+        if (isEmpty())
+        {
+            cout << "Inventory is empty.\n";
+            return;
+        }
+        cout << "Current Inventory (Top to Bottom):\n";
+        for (int i = top; i >= 0; --i)
+        {
+            cout << " - " << items[i] << "\n";
+        }
+    }
+
     bool isEmpty() { return (top < 0); }
 };
 
-
-class Queue {
+/* --------- Queue (shipping, FIFO) --------- */
+class Queue
+{
 private:
-    static const int MAX = 100;   
+    static const int MAX = 100;
     string items[MAX];
-    int front, rear, count;
+    int front, rear, count; // circular buffer
 public:
-    Queue() {
-        front = 0;
-        rear = -1;
-        count = 0;
-    }
+    Queue() : front(0), rear(-1), count(0) {}
 
-   
-    void enqueue(string item) {
-        if (count >= MAX) {
+    void enqueue(const string &item)
+    {
+        if (count >= MAX)
+        {
             cout << "Error: Shipping queue full!\n";
             return;
         }
         rear = (rear + 1) % MAX;
         items[rear] = item;
-        count++;
+        ++count;
         cout << "Processed \"" << item << "\" and added to shipping queue.\n";
     }
 
-    string dequeue() {
-        if (isEmpty()) {
+    string dequeue()
+    {
+        if (isEmpty())
+        {
             cout << "No items to ship.\n";
             return "";
         }
         string item = items[front];
         front = (front + 1) % MAX;
-        count--;
-        cout << "Shipping item: " << item << endl;
+        --count;
+        cout << "Shipping item: " << item << "\n";
         return item;
     }
 
-
-    string peekNextItem() {
-        if (isEmpty()) return "No items in shipping queue.";
+    string peekNextItem()
+    {
+        if (isEmpty())
+            return "No items in shipping queue.";
         return items[front];
     }
 
-    bool isEmpty() { return (count == 0); }
+    void displayQueue()
+    {
+        if (isEmpty())
+        {
+            cout << "Shipping queue is empty.\n";
+            return;
+        }
+        cout << "Current Shipping Queue (Front to Rear):\n";
+        for (int i = 0; i < count; ++i)
+        {
+            int idx = (front + i) % MAX;
+            cout << " - " << items[idx] << "\n";
+        }
+    }
+
+    bool isEmpty() { return count == 0; }
 };
 
-
-int main() {
+/* --------- main --------- */
+int main()
+{
     Stack inventory;
     Queue shipping;
-    int choice;
-    string item;
 
     cout << "=== Warehouse Inventory and Shipping System ===\n";
 
-    do {
-        
-        cout << "\nMenu:\n";
-        cout << "1. Add Incoming Item\n";
-        cout << "2. Process Incoming Item\n";
-        cout << "3. Ship Item\n";
-        cout << "4. View Last Incoming Item\n";
-        cout << "5. View Next Shipment\n";
-        cout << "6. Exit\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
-        cin.ignore();  
+    while (true)
+    {
+        int choice = readMenuChoice(1, 8);
 
-        switch (choice) {
-            case 1:
-                cout << "Enter item name: ";
-                getline(cin, item);
-                inventory.pushItem(item);
-                break;
-            case 2:
-                if (!inventory.isEmpty()) {
-                    string processed = inventory.popItem();
-                    if (processed != "") shipping.enqueue(processed);
-                } else {
-                    cout << "No items in inventory to process.\n";
-                }
-                break;
-            case 3:
-                shipping.dequeue();
-                break;
-            case 4:
-                cout << "Last incoming item: " 
-                     << inventory.peekLastItem() << endl;
-                break;
-            case 5:
-                cout << "Next item to ship: " 
-                     << shipping.peekNextItem() << endl;
-                break;
-            case 6:
-                cout << "Exiting...\n";
-                break;
-            default:
-                cout << "Invalid choice. Try again.\n";
+        switch (choice)
+        {
+        case 1:
+        { // Process Incoming (Stack -> Queue)
+            if (!inventory.isEmpty())
+            {
+                string processed = inventory.popItem();
+                if (!processed.empty())
+                    shipping.enqueue(processed);
+            }
+            else
+            {
+                cout << "No items in inventory to process.\n";
+            }
+            break;
         }
-    } while (choice != 6);
 
-    return 0;
+        case 2:
+        { // Ship Item
+            shipping.dequeue();
+            break;
+        }
+
+        case 3:
+        { // View Last Incoming
+            cout << "Last incoming item: " << inventory.peekLastItem() << "\n";
+            break;
+        }
+
+        case 4:
+        { // View Next Shipment
+            cout << "Next item to ship: " << shipping.peekNextItem() << "\n";
+            break;
+        }
+
+        case 5:
+        { // Display all incoming items
+            inventory.displayStack();
+            break;
+        }
+
+        case 6:
+        { // Display all shipping items
+            shipping.displayQueue();
+            break;
+        }
+
+        case 7:
+            cout << "Exiting...\n";
+            return 0;
+        }
+    }
 }
